@@ -28,8 +28,7 @@ int ClientServiceManager::getMaxFd() {
     return max_fd;
 }
 
-void ClientServiceManager::addClientToFdSet() {
-    mutex.lock();
+void ClientServiceManager::copyClientsToFdSet() {
     FD_ZERO(&backup_set);
 
     const std::list<TcpClient*>& client_list = tcp_server_controller->getClientDBManager()->getClientList();
@@ -38,13 +37,11 @@ void ClientServiceManager::addClientToFdSet() {
     }
 
     this->max_fd = getMaxFd();
-    mutex.unlock();
 }
 
 void ClientServiceManager::run() {
     sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
-    const std::list<TcpClient*>& client_list = tcp_server_controller->getClientDBManager()->getClientList();
     std::list<TcpClient*>::const_iterator it;
     int readBytes;
     char* buffer = new char[BUFFER_SIZE];
@@ -58,20 +55,29 @@ void ClientServiceManager::run() {
             continue; 
         }
 
-        mutex.lock();
+        tcp_server_controller->mutex.lock();
         memcpy(&fdset, &backup_set, sizeof(fd_set));
         if (select(max_fd + 1, &fdset, NULL, NULL, &timeout) == -1) {
             perror("select");
             return;
         }
-        mutex.unlock();
+        tcp_server_controller->mutex.unlock();
 
+        const std::list<TcpClient*>& client_list = tcp_server_controller->getClientDBManager()->getClientList();
         for (it = client_list.begin(); it != client_list.end(); it++) {
+            if (stop_flag) {
+                break;
+            }
             if (FD_ISSET((*it)->getFD(), &fdset)) {
 
                 if ((readBytes = recvfrom((*it)->getFD(), buffer, BUFFER_SIZE, 0, (sockaddr*)&client_addr, &client_addr_len)) == -1) {
             	    perror("recvfrom");
                     return;
+                }
+
+                if (readBytes == 0) {
+                    tcp_server_controller->removeClient(*it);
+                    break;
                 }
 
                 if (tcp_server_controller->onCLientSendData != nullptr && readBytes > 0) {
@@ -87,9 +93,4 @@ void ClientServiceManager::run() {
 
 std::string ClientServiceManager::getName() {
     return "ClientServiceManager";
-}
-
-void ClientServiceManager::stop() {
-    stop_flag = true;
-    service_thread->join();
 }

@@ -17,7 +17,6 @@ private:
 public:
     ClientServiceManager(TcpServerController* tcp_server_controller);
     int getMaxFd();
-    void addClientToFdSet();
+    void copyClientsToFdSet();
     std::string getName() override;
-    void stop() override;
 };

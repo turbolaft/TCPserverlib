@@ -10,7 +10,5 @@ private:
     void run() override;
 public:
     ConnectionAcceptor(TcpServerController* tcp_server_controller);
-    ~ConnectionAcceptor();
     std::string getName() override;
-    void stop() override;
 };
