@@ -89,7 +89,7 @@ int main() {
     std::cin.ignore();
 
     // Stop the server
-    tcp_server.stop();
+    tcp_server->stop();
 
     return 0;
 }
