@@ -29,14 +29,16 @@ To install the TCP Server Library, you can use the following command:
 git clone https://github.com/turbolaft/TCPserverlib
 cd TCPserverlib
 make
-./bin/main
+sudo cp ./bin/libs/libserver.so /home/usr/lib/libserver.so
+cd ../
+g++ -Wall -std=c++11 -I$(pwd)/TCPserverlib/include `your file`.cpp -o `your executable` -lserver
 ```
 ## Usage
 
 To use the TCP Server Library in your application, follow these steps:
 
-1. Install the library by cloning the repository and building it using the provided Makefile.
-2. Include the library's header file in your source code: `#include "../include/TCPserver.hpp"`.
+1. Install the library by cloning the repository and building it using the provided Makefile, You will need to use `sudo cp ./bin/libs/libserver.so /home/usr/lib/libserver.so` so that compiler know where to find your library and prevent specifying absolute path for the lib every time you run the programm.
+2. Include the library's header file in your source code: `#include "TcpServerController.hpp"`, `#include "ClientDBManager.hpp"`, all of the header files are in `$(pwd)/TCPserverlib/include`, so don't forget to specify `-I$(pwd)/TCPserverlib/include` into ur g++ or clang command line.
 3. Create an instance of the `TcpServerController` class, this class is responsible for handling all the other classes in the library.
 4. Configure the server by setting the desired options, such as the listening port and maximum number of connections.
 5. Implement the necessary event handlers for handling incoming connections `onClientConnected`, receiving data `onCLientSendData`, and client disconnection `onClientDisconnected`.
@@ -48,7 +50,10 @@ Here's a simple example of how to use the TCP Server Library:
 ## Examples
 
 ```cpp
-#include "../include/TCPserver.hpp"
+#include <iostream>
+#include <string>
+#include "TcpServerController.hpp"
+#include "ClientDBManager.hpp"
 
 // Event handler for when a client connects
 void onClientConnected(TcpServerController* tcp_server, TcpClient* client) {
@@ -84,7 +89,7 @@ int main() {
     std::cin.ignore();
 
     // Stop the server
-    server.stop();
+    tcp_server.stop();
 
     return 0;
 }

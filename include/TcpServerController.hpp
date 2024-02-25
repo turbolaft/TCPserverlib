@@ -10,7 +10,7 @@ class ConnectionAcceptor;
 #define TCP_SERVER_NOT_ACCEPTING_NEW_CONNECTIONS (4)
 #define TCP_SERVER_NOT_LISTENING_CLIENTS (8)
 
-#include "../include/TcpClient.hpp"
+#include "TcpClient.hpp"
 
 class TcpServerController {
 private:
